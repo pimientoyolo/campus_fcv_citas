@@ -18,6 +18,9 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
 
+    networks:
+      - citas-net
+
     healthcheck:
       test:
         [
@@ -54,6 +57,9 @@ services:
     ports:
       - "${API_PORT:-8080}:8080"
 
+    networks:
+      - citas-net
+
     depends_on:
       mysql:
         condition: service_healthy
@@ -61,7 +67,7 @@ services:
     command:
       - bash
       - -lc
-      - tail -f /dev/null
+      - mvn -B -ntp spring-boot:run
 
 
   citas-web-dev:
@@ -79,16 +85,24 @@ services:
       - "${REACT_PORT:-5173}:5173"
       - "${ANGULAR_PORT:-4200}:4200"
 
+    networks:
+      - citas-net
+
     depends_on:
       - citas-api-dev
 
     command:
       - sh
       - -lc
-      - tail -f /dev/null
+      - npm run dev -- --host 0.0.0.0
 
+
+networks:
+  citas-net:
+    driver: bridge
+    name: citas-network
 
 volumes:
   mysql_data:
   maven_cache:
-  node_cache:
+  node_cache:

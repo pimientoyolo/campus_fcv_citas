@@ -1,7 +1,18 @@
 .env
+.env.*
+!.env.example
 .DS_Store
 *.log
 mysql-data/
 .idea/
 .vscode/
 db.sql
+
+# Repositorios anidados
+/citas-api/*
+!/citas-api/.env.example
+!/citas-api/README.md
+/citas-web/*
+!/citas-web/.env.example
+!/citas-web/README.md
+!/citas-web/.gitignore
