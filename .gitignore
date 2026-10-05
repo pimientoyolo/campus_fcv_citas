@@ -1,0 +1,13 @@
+.env
+.env.*
+!.env.example
+.DS_Store
+*.log
+mysql-data/
+.idea/
+.vscode/
+db.sql
+
+# Repositorios anidados
+/citas-api
+/citas-web
