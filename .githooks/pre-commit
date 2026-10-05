@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Pre-commit hook para asegurar la calidad y evitar filtración de secretos
+
+echo "🔍 [pre-commit] Ejecutando validaciones de seguridad y calidad..."
+
+# 1. Verificar si se intentó hacer stage de archivos .env privados
+STAGED_ENV_FILES=$(git diff --cached --name-only | grep -E '^\.env(\..+)?$' | grep -v '^\.env\.example$' || true)
+if [ -n "$STAGED_ENV_FILES" ]; then
+    echo "❌ [pre-commit] Error: Intento de commitear archivo de entorno confidencial:"
+    echo "$STAGED_ENV_FILES"
+    echo "Los secretos deben manejarse mediante variables de entorno locales."
+    exit 1
+fi
+
+# 2. Escanear contenido en stage en busca de patrones de secretos reales o ficticios
+SECRET_PATTERNS='(BEGIN (RSA|EC|OPENSSH|PGP) PRIVATE KEY|AKIA[0-9A-Z]{16}|eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}|(secret|password|jwt_secret)\s*[:=]\s*["'\''][^"'\'']{8,})'
+
+STAGED_SECRET_MATCHES=$(git diff --cached -S"SECRET" -p | grep -E -i "$SECRET_PATTERNS" || true)
+if [ -n "$STAGED_SECRET_MATCHES" ]; then
+    echo "❌ [pre-commit] Error: Se detectaron posibles credenciales o secretos en el código staged:"
+    echo "$STAGED_SECRET_MATCHES" | head -n 5
+    echo "Por favor elimina los secretos del código antes de hacer commit."
+    exit 1
+fi
+
+echo "✅ [pre-commit] Filtros de seguridad pasados con éxito."
+exit 0
